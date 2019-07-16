@@ -1,0 +1,12 @@
+# 请参考 https://help.aliyun.com/document_detail/59293.html 了解更多关于release文件的编写方式 
+
+# 构建源码语言类型
+code.language=scripts
+
+docker.file=Dockerfile
+
+docker.repo=registry.cn-hangzhou.aliyuncs.com/test50j/beta-50jia-web
+
+docker.tag=latest
+
+build.image=registry.cn-hangzhou.aliyuncs.com/test50j/beta-50jia-web
