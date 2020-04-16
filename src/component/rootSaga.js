@@ -6,7 +6,7 @@ import ContractReportPageSaga from './ContractReportPage/saga';
 import DetailSaga from './Detail/saga';
 import DetailSpeSaga from './DetailSpe/saga';
 import EditSaga from './Edit/saga';
-import PopFormSaga from './SelefButton/saga';
+import SelefButtonSaga from './SelefButton/saga';
 import OfferDetailSaga from './OfferDetail/saga';
 import PageFormSettingSaga from './PageFormSetting/saga';
 
@@ -18,7 +18,7 @@ export default function* rootSaga() {
         ContractReportPageSaga(),
         DetailSaga(),
         EditSaga(),
-        PopFormSaga(),
+        SelefButtonSaga(),
         DetailSpeSaga(),
         OfferDetailSaga(),
         PageFormSettingSaga(),

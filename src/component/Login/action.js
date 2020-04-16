@@ -1,22 +1,22 @@
-import {LOGIN_START,LOGIN_SUCCESS,LOGIN_ERROR} from '../../../src/common/API'
+import { LOGIN_START, LOGIN_SUCCESS, LOGIN_ERROR } from '../../../src/common/API'
 
-export function loginStart(paload){
+export function loginStart(paload) {
     return {
-        type:LOGIN_START,
+        type: LOGIN_START,
         paload
     }
 }
 
-export function loginSuccess(paload){
+export function loginSuccess(paload) {
     return {
-        type:LOGIN_SUCCESS,
+        type: LOGIN_SUCCESS,
         paload
     }
 }
 
-export function loginError(paload){
+export function loginError(paload) {
     return {
-        type:LOGIN_ERROR,
+        type: LOGIN_ERROR,
         paload
     }
 }

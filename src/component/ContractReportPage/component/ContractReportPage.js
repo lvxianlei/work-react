@@ -23,7 +23,7 @@ export default class ContractReportPage extends Component {
         }));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.ContractReportPage.get('error')) {
             this.props.dispatch(push(`/home/nomatch/${nextProps.ContractReportPage.get('error').status}`));
         }

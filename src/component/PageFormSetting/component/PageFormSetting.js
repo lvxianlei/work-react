@@ -1,14 +1,16 @@
 import React, { Component } from "react";
 import PropTypes from 'prop-types';
-import { Spin, Row, List } from 'antd';
+import { Spin, Row, List, message } from 'antd';
 import { DndProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { push } from 'react-router-redux';
 import { Map, is } from "immutable";
-import { fetchPageFormSettingStart } from '../action';
+import { fetchPageFormSettingStart, savePageFormSettingStart } from '../action';
 import { getItem, setItem } from '../../../common/util/util';
 import DragSourceBox from "./DragSourceBox";
 import DropTargetBox from "./DropTargetBox";
+import { SAVE_FIELD_URL } from '../../../common/API'
+
 export default class PageFormSetting extends Component {
   constructor(props) {
     super(props);
@@ -18,6 +20,8 @@ export default class PageFormSetting extends Component {
     };
   }
 
+  static savePageFormData;
+
   componentDidMount() {
     let path = getItem('pageFormSetting');
     !path && (path = this.state.info.get('url'));
@@ -25,11 +29,26 @@ export default class PageFormSetting extends Component {
     this.props.dispatch(fetchPageFormSettingStart({ path: this.state.info.get('url'), data: { current: "1", pageSize: "20", params: {} } }));
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.pageFormData.get('error')) {
       this.props.dispatch(push(`/home/nomatch/${nextProps.pageFormData.get('error').status}`));
     }
     !is(this.state.pageFormData, nextProps.pageFormData) && this.setState({ pageFormData: nextProps.pageFormData });
+  }
+
+  componentDidUpdate() {
+    const isSubmitSetting = this.state.pageFormData.get('isSubmitSetting')
+    isSubmitSetting && this.savePageForm()
+    isSubmitSetting && message.success('数 据 保 存 成 功 ！ ')
+  }
+
+  savePageFormData(data) {
+    this.savePageForm = message.loading('正 在 保 存 数 据 ......', 0)
+    const path = SAVE_FIELD_URL;
+    const { page } = this.state.pageFormData.toJS();
+    const postPage = page.pageFieldPositions.filter(item => item.name === 'id')
+    page.pageFieldPositions = data.concat(postPage)
+    this.props.dispatch(savePageFormSettingStart({ path, data: page }))
   }
 
   render() {
@@ -52,7 +71,7 @@ export default class PageFormSetting extends Component {
                   </List.Item>
                 )} />
             </nav>
-            <DropTargetBox page={Map(page)} pages={pages} />
+            <DropTargetBox page={Map(page)} pages={pages} savePageFormData={this.savePageFormData.bind(this)} />
           </Row>
         </DndProvider>
       </Spin>

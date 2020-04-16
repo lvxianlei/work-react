@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import { Spin, Row, Col, Descriptions } from 'antd';
+import { Spin, Row, Col, Descriptions, message } from 'antd';
 import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map, is } from "immutable";
 import { fetchDetailStart, fetchPopFormStart } from '../action';
-import { saveOrUpdateStart } from '../../SelefButton/action';
-import { fetchListStart } from '../../List/action';
-import { headClassify, columnsTypeHandlers, getItem, setItem } from '../../../common/util/util';
+import { saveOrUpdateStart, deleteReset } from '../../SelefButton/action';
+import { headClassify, getItem, setItem } from '../../../common/util/util';
+import { TableHeaderType } from '../../../common/Type';
 import SelefButton from '../../SelefButton';
 import TableView from '../../../common/component/TableView';
 import PopForm from '../../../common/component/PopForm';
@@ -28,35 +28,42 @@ export default class Detail extends Component {
     super(props);
     this.state = {
       info: Map(this.props.location.state),
-      detailData: this.props.Detail,
+      Detail: this.props.Detail,
+      saveData: this.props.SaveData,
       visible: false,
       plistVisible: false,
-      title: "",
+      title: ""
     }
     this.handleCancel = this.handleCancel.bind(this);
     this.handleCreate = this.handleCreate.bind(this);
-    this.saveFormRef = this.saveFormRef.bind(this);
+    this.savePopFormRef = this.savePopFormRef.bind(this);
     this.show = this.show.bind(this);
     this.plistCancel = this.plistCancel.bind(this);
   }
 
+  static deleteTag;
+
   componentDidMount() {
-    let path = getItem('detail');
-    !path && (path = this.state.info.get('url'));
-    setItem({ detail: this.state.info.get('url') });
-    this.props.dispatch(fetchDetailStart({ path: this.state.info.get('url'), data: { current: "1", pageSize: "20", params: {} } }));
-  }
-
-  shouldComponentUpdate(nextProps) {
-    const { info } = this.state;
-    return is(info, Map(nextProps.location.state));
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.Detail.get('error')) {
-      this.props.dispatch(push(`/home/nomatch/${nextProps.Detail.get('error').status}`));
+    let path = this.state.info.get('url');
+    if (!path) {
+      const localPath = getItem('detail');
+      path = localPath ? localPath : false;
+    } else {
+      setItem({ detail: this.state.info.get('url') })
     }
-    !is(this.state.detailData, nextProps.Detail) && this.setState({ detailData: nextProps.Detail });
+    if (path) {
+      this.props.dispatch(fetchDetailStart({ path }));
+    } else {
+      this.props.dispatch(push(`/home/nomatch/404`));
+    }
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.Detail.getIn(['detailData', 'error'])) {
+      this.props.dispatch(push(`/home/nomatch/${nextProps.Detail.getIn(['detailData', 'error']).status}`));
+    }
+    !is(this.state.saveData, nextProps.SaveData) && this.setState({ saveData: nextProps.SaveData });
+    !is(this.state.Detail, nextProps.Detail) && this.setState({ Detail: nextProps.Detail });
   }
 
   show(event) {
@@ -72,46 +79,72 @@ export default class Detail extends Component {
     this.setState({ plistVisible: false });
   };
 
-  handleCreate() {
-    const form = this.formRef.props.form;
-    const { formData } = this.state;
-    form.validateFields((err, values) => {
+  handleCreate(event) {
+    event.preventDefault();
+    const detail = this.state.Detail;
+    const postData = detail.get('popForm');
+    this.popFormRef.validateFields((err, values) => {
       if (err) {
         return;
       }
-      const postData = formData.toJS();
       for (let key in values) {
         postData.data[key] = values[key];
       }
-      this.props.dispatch(saveOrUpdateStart({
-        path: `/${formData.get('url')}/base/saveOrUpdate/${formData.get('name')}`,
-        data: postData
-      }));
-      this.setState({
-        visible: false
-      });
-      this.props.dispatch(fetchListStart({ path: getItem('state'), data: { current: "1", pageSize: "20", params: {} } }));
+
+      console.log(postData, values, is(postData, this.state.Detail.get('popForm')));
+      // this.props.dispatch(saveOrUpdateStart({
+      //   path: `/${formData.get('url')}/base/saveOrUpdate/${formData.get('name')}`,
+      //   data: postData
+      // }));
     });
   }
 
-  saveFormRef(formRef) {
-    this.formRef = formRef;
+  componentDidUpdate() {
+    const { isLoaded, deleteId } = this.state.saveData.get('delete');
+    const willReceiveDetail = this.state.Detail;
+    const relations = willReceiveDetail.get('relations');
+    const saveData = this.props.SaveData.getIn(['saveData', 'isLoaded']);
+    if (isLoaded) {
+      this.deleteTag && this.deleteTag();
+      message.success('数 据 成 功 删 除 ! ');
+      relations.forEach(item => {
+        if (item => item.name === deleteId.name) {
+          item.data.list = item.data.list.filter(dataItem => {
+            let filterCondition;
+            dataItem.pageButton.forEach(button => {
+              filterCondition = button.linkUrl !== deleteId.linkUrl;
+            });
+            return filterCondition;
+          });
+        }
+      });
+      this.setState({ Detail: willReceiveDetail });
+      this.props.dispatch(deleteReset());
+    }
+    // this.setState({
+    //   visible: false
+    // });
+  }
+
+  savePopFormRef(formRef) {
+    if (formRef + '' !== 'null') {
+      this.popFormRef = formRef.props.form;
+    }
   }
 
   render() {
-    const detailData = this.state.detailData;
-    const head = headClassify(detailData.get('head'));
-    const data = detailData.get('data');
-    const pageButton = detailData.get('pageButton');
-    const pageRelations = detailData.get('pageRelations').filter(item => item.relatePageName);
-    const relations = detailData.get('relations');
-    const formData = Map(detailData.get('popForm'));
+    const detailData = this.state.Detail.get('detailData');
+    const relations = this.state.Detail.get('relations');
+    const head = headClassify(detailData.head);
+    const { data, pageButton, pageRelations } = detailData;
+    const formData = Map(this.state.Detail.get('popForm'));
     const { visible, plistVisible, title, isLoaded } = this.state;
+    const pages = pageRelations.filter(item => item.relatePageName);
     return (
-      <Spin className="mainList" size="large" spinning={!detailData.get('isLoaded')}>
+      <Spin className="mainList" size="large" spinning={!detailData.isLoaded}>
         <PopForm
           okButtonIsLoaded={isLoaded}
-          wrappedComponentRef={this.saveFormRef}
+          wrappedComponentRef={this.savePopFormRef}
           title={title} visible={visible}
           data={formData}
           onCancel={this.handleCancel}
@@ -138,14 +171,14 @@ export default class Detail extends Component {
             <Row style={{ background: '#e2e5e9' }}><h3>{list.type}</h3></Row>
             <Descriptions bordered>
               {list.category.map(item => {
-                const columns = columnsTypeHandlers(item);
+                const columns = TableHeaderType(item);
                 return (<Descriptions.Item key={item.name} label={item.label}>
                   {columns.render ? columns.render(data[item.name], item) : data[item.name]}
                 </Descriptions.Item>)
               })}
             </Descriptions>
           </Row>))}
-          {pageRelations.map(relation => {
+          {pages.map(relation => {
             const relationData = relations.filter(item => item.name === relation.relatePageName)[0];
             return (
               <Row
@@ -157,7 +190,7 @@ export default class Detail extends Component {
                   <Col span={2}><h3>{relation.title}</h3></Col>{
                     relation.pageButton && relation.pageButton.map(item => (
                       <Col span={2} key={item.name}>
-                        <SelefButton {...item} show={this.show}>{item.name}</SelefButton>
+                        <SelefButton deleteTag={this.deleteTag} {...item} show={this.show}>{item.name}</SelefButton>
                       </Col>))
                   }</Row>
                 {relations.length > 0 && <TableView

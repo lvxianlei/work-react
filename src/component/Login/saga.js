@@ -13,7 +13,7 @@ function dataFormat(values) {
 
 function getToken(data) {
     return new Promise((resolve, reject) => {
-        fetch('/oauth/token', {
+        fetch('/api-user/oauth/token', {
             method: "POST",
             headers: {
                 'Authorization': 'Basic YXBwNTBqaWE6NTBqaWExMjM0NTY=',

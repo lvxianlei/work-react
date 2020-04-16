@@ -71,10 +71,13 @@ export const request = info => {
             headers: {
                 'Authorization': 'Basic YXBwNTBqaWE6NTBqaWExMjM0NTY=',
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-            }, body: `access_token=${getItem('access_token') || ""}&data=${JSON.stringify(data)}`
+            }, body: `access_token=${getItem('access_token') || ""}&data=${encodeURIComponent(JSON.stringify(data))}`
         }).then(res => {
             if (res.ok) {
-                return resolve(res.json())
+                res.json().then(json => resolve(json)).catch(error => {
+                    res.bodyUsed = false;
+                    res.text().then(text => resolve(text));
+                })
             } else {
                 errorHandler(res);
                 reject(res);

@@ -4,7 +4,8 @@ import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map, is } from "immutable";
 import { fetchOfferDetailStart, fetchOfferTabsStart } from '../action';
-import { getItem, setItem, headClassify, columnsTypeHandlers } from '../../../common/util/util';
+import { getItem, setItem, headClassify } from '../../../common/util/util';
+import { TableHeaderType } from '../../../common/Type';
 const { TabPane } = Tabs;
 export default class OfferDetail extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ export default class OfferDetail extends Component {
     this.props.dispatch(fetchOfferDetailStart({ path: this.state.info.get('url'), data: { current: "1", pageSize: "20", params: {} } }));
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.OfferDetail.get('error')) {
       this.props.dispatch(push(`/home/nomatch/${nextProps.OfferDetail.get('error').status}`));
     }
@@ -35,7 +36,7 @@ export default class OfferDetail extends Component {
     this.props.dispatch(fetchOfferTabsStart({ path: tabItem.URL, data: tabItem.param }));
   }
 
-  componentWillUpdate() {
+  UNSAFE_componentWillUpdate() {
     const { offerData } = this.state;
     const { data } = offerData.toJS();
     const that = this;
@@ -62,7 +63,7 @@ export default class OfferDetail extends Component {
           {header.map((item, index) => <Col span={12} key={index}>
             <Descriptions bordered layout="vertical">
               {item.category.map(item => {
-                const columns = columnsTypeHandlers(item);
+                const columns = TableHeaderType(item);
                 return (<Descriptions.Item key={item.name} label={item.label}>
                   {columns.render ? columns.render(data[item.name], item) : data[item.name]}
                 </Descriptions.Item>)

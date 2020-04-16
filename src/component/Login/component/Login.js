@@ -5,16 +5,19 @@ import { push } from 'react-router-redux';
 class Login extends Component {
     constructor(props) {
         super(props);
-        this.handleSubmit = this.handleSubmit.bind(this);
         this.state = {
-            error: false
+            error: false,
+            loading: false
         }
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.chooseAlertMesssge = this.chooseAlertMesssge.bind(this);
     }
 
     handleSubmit(e) {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
+                this.setState({ loading: true });
                 const conmit = {
                     ...values,
                     scope: 'read',
@@ -24,7 +27,7 @@ class Login extends Component {
                 }
                 this.props.dispatch(loginStart(conmit));
             }
-        }); 
+        });
     }
 
     chooseAlertMesssge(data) {
@@ -52,14 +55,14 @@ class Login extends Component {
         return message;
     }
 
-    componentWillReceiveProps(nextProps) {
-        !nextProps.Login.get('error') && this.setState({ error: nextProps.Login.get('errorInfo') });
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        nextProps.Login.get('error') && this.setState({ error: nextProps.Login.get('errorInfo'), loading: false });
         nextProps.Login.get('isLogin') && this.props.dispatch(push('/home'));
     }
 
     render() {
         const { getFieldDecorator } = this.props.form;
-        const { error } = this.state;
+        const { error, loading } = this.state;
         return (
             <div className="login">
                 <div className="text-center">
@@ -82,7 +85,7 @@ class Login extends Component {
                             )}
                         </Form.Item>
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" className="login-form-button">登录</Button>
+                            <Button type="primary" loading={loading} htmlType="submit" className="login-form-button">登录</Button>
                         </Form.Item>
                     </Form>
                 </div>

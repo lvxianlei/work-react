@@ -9,8 +9,9 @@ function deleteStart(data) {
 
 function* deleteAction(action) {
     try {
+        const { deleteId, currentPage } = action.paload;
         const deleteInfo = yield call(deleteStart, action.paload);
-        yield put(deleteSuccess(deleteInfo));
+        yield put(deleteSuccess({ deleteId, currentPage, message: deleteInfo }));
     } catch (err) {
         yield put(deleteError(err));
     }
@@ -35,7 +36,7 @@ function* saveOrUpdateAction(action) {
     }
 }
 
-export default function* DeleteSaga() {
+export default function* SelefButtonSaga() {
     yield takeEvery(DELETE_START, deleteAction);
     yield takeEvery(SAVEORUPDATE_START, saveOrUpdateAction);
 }

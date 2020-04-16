@@ -1,16 +1,5 @@
 // 由于原系统数据规划不合理，强行修改后台会影响线上系统运行，
-//所以根据需要修改部分数据，若后期有其他方式的话再自行是否使用
-/**
- * 
- * code: 0,
-data: {
-    flowActivityInstance: {},
-    flowActivityInstanceUser: {},
-    flowActivityInstances: [],
-    flowInstanceId: ""
-},message: '',
- *  */
-
+//所以根据需要修改部分数据，若后期有其他方式的话再自行选择是否使用;
 export const statusOption = [
     { value: "1", label: "未处理", },
     { value: "2", label: "正在处理", },
@@ -60,18 +49,19 @@ const offerDetailHead = [
 ];
 
 export function formatDetailSpe(data) {
-    const nextData = data.data.flowActivityInstance;
-    const flowActivityInstances = data.data.flowActivityInstances;
+    const { flowActivityInstance, flowActivityInstances, flowActivityInstanceUser } = data.data;
     const activityData = {
         head: detailSpeHead,
-        data: nextData,
+        data: flowActivityInstance,
         flowActivityInstances,
+        flowActivityInstanceUser,
         statusOption
     };
-    return nextData ? activityData : {
-        head:[],
-        data:[],
-        flowActivityInstances:data.data,
+    return flowActivityInstance ? activityData : {
+        head: [],
+        data: [],
+        flowActivityInstance: {},
+        flowActivityInstances: data.data,
     }
 }
 

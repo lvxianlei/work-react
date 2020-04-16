@@ -1,9 +1,8 @@
-import { call, put, takeEvery, delay } from 'redux-saga/effects';
-import { fetchEditSuccess, fetchEditError } from './action';
-import { FETCH_EDIT_START, FETCH_PWDINFO } from '../../../src/common/API';
+import { call, put, takeEvery, takeLatest, delay } from 'redux-saga/effects';
+import { fetchEditSuccess, fetchEditError, saveEditInputInfoSuccess, saveEditInputInfoError } from './action';
+import { FETCH_EDIT_START, FETCH_PWDINFO, SAVE_EDITINPUTINFO_START } from '../../../src/common/API';
 import { request } from '../../common/util/request';
-import { Map } from 'immutable';
-const pwdInfo = Map({
+const pwdInfo = {
     applicationClass: "",
     head: [{
         position: "1",
@@ -65,7 +64,7 @@ const pwdInfo = Map({
     url: '',
     webJS: null,
     isLoaded: true
-});
+};
 
 function fetchEdit(data) {
     return request(data)
@@ -80,6 +79,23 @@ function* getEditAction(action) {
     }
 }
 
+function saveEditInputInfo(data) {
+    return request(data)
+}
+
+function* saveEditInputInfoAction(action) {
+    try {
+        const editInputInfo = yield call(saveEditInputInfo, action.paload);
+        if (editInputInfo === 'FAILED') {
+            yield put(saveEditInputInfoError(editInputInfo));
+        } else {
+            yield put(saveEditInputInfoSuccess(editInputInfo));
+        }
+    } catch (err) {
+        yield put(saveEditInputInfoError(err));
+    }
+}
+
 export function* pwdInfoAsync() {
     yield delay(500);
     yield put(fetchEditSuccess(pwdInfo));
@@ -87,5 +103,6 @@ export function* pwdInfoAsync() {
 
 export default function* EditSaga() {
     yield takeEvery(FETCH_EDIT_START, getEditAction);
-    yield takeEvery(FETCH_PWDINFO, pwdInfoAsync);
+    yield takeEvery(SAVE_EDITINPUTINFO_START, saveEditInputInfoAction);
+    yield takeLatest(FETCH_PWDINFO, pwdInfoAsync);
 }

@@ -189,7 +189,9 @@ body,
   width: 88%;
   margin-left: 10px;
 }
-
+.delete {
+  cursor: pointer;
+}
 .dropTarget .hover {
   display: flex;
   justify-content: center;
@@ -211,4 +213,43 @@ body,
 
 .dropTarget .hide {
   display: none;
+}
+.page_form {
+  .list_item {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: center;
+    .sortable-item {
+      display: flex;
+      justify-content: flex-start;
+      width: 30%;
+      margin: 0px 24px 10px 0;
+      .delete-btn {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
+      }
+      .delete {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+      }
+    }
+  }
+}
+
+.ant-advanced-search-form {
+  padding: 24px;
+  background: #fbfbfb;
+}
+
+.ant-advanced-search-form .ant-form-item {
+  display: flex;
+}
+
+.ant-advanced-search-form .ant-form-item-control-wrapper {
+  flex: 1;
 }

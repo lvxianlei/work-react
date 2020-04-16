@@ -1,0 +1,22 @@
+export default {
+    String: "文本类型",
+    string: "文本类型",
+    id: "隐藏",
+    number: "数字类型",
+    date: "时间类型",
+    dateCopy: "时间类型",
+    type: "下拉类型",
+    text: "富文本类型",
+    hide: "隐藏",
+    select: "下拉类型",
+    "java.math.BigDecimal": "数字类型",
+    "java.util.Date": "时间类型",
+    serial: "编号",
+    areaLinkage: "文本类型",
+    plist: "列表类型",
+    markdown: "文本类型",
+    ueditor: "富文本",
+    tree: "树状类型",
+    checkbox: "多选类型",
+    picture: "图片"
+}

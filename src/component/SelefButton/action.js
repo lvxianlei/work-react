@@ -1,5 +1,5 @@
 import {
-    DELETE_START, DELETE_SUCCESS, DELETE_ERROR,
+    DELETE_START, DELETE_SUCCESS, DELETE_ERROR, DELETE_RESET,
     SAVEORUPDATE_START, SAVEORUPDATE_SUCCESS, SAVEORUPDATE_ERROR
 } from '../../../src/common/API'
 
@@ -21,6 +21,12 @@ export function deleteError(paload) {
     return {
         type: DELETE_ERROR,
         paload
+    }
+}
+
+export function deleteReset() {
+    return {
+        type: DELETE_RESET
     }
 }
 

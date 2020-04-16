@@ -1,107 +1,26 @@
 import React from 'react';
-import { Table, Button, Input } from 'antd';
+import { Table, Row, Col } from 'antd';
 import PropTypes from 'prop-types';
-import { columnsTypeHandlers } from '../util/util';
-import Highlighter from 'react-highlight-words';
+import { TableHeaderType } from '../Type';
 import SelefButton from '../../component/SelefButton';
-let searchText = "";
-let searchInput;
-const handleSearch = (selectedKeys, confirm) => {
-    confirm();
-    searchText = selectedKeys[0];
-};
 
-const handleReset = clearFilters => {
-    clearFilters();
-    searchText = "";
-};
-
-const onShowSizeChange = () => {
-
-}
-
-function getColumnSearchProps(dataIndex, filterPorps) {
-    let filter = {};
-    filterPorps && filterPorps.length > 0 && (filterPorps = filterPorps.filter(item => item.type === "INPUT"));
-    filterPorps.length > 0 && (filterPorps = filterPorps[0].doQueryConditions);
-
-    filterPorps.length > 0 && filterPorps.forEach(item => {
-        if (dataIndex === item.name) {
-            filter = {
-                filterDropdown({ setSelectedKeys, selectedKeys, confirm, clearFilters }) {
-                    return (<div style={{ padding: 8 }}>
-                        <Input
-                            ref={node => {
-                                searchInput = node;
-                            }}
-                            placeholder={`Search ${dataIndex}`}
-                            value={selectedKeys[0]}
-                            onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                            onPressEnter={() => handleSearch(selectedKeys, confirm)}
-                            style={{ width: 188, marginBottom: 8, display: 'block' }}
-                        />
-                        <Button
-                            type="primary"
-                            onClick={() => handleSearch(selectedKeys, confirm)}
-                            icon="search"
-                            size="small"
-                            style={{ width: 90, marginRight: 8 }}
-                        >
-                            搜索
-                      </Button>
-                        <Button
-                            onClick={() => handleReset(clearFilters)}
-                            size="small"
-                            style={{ width: 90 }}>
-                            重置
-                      </Button>
-                    </div>)
-                },
-                onFilter(value, record) {
-                    record[dataIndex]
-                        .toString()
-                        .toLowerCase()
-                        .includes(value.toLowerCase())
-                },
-                onFilterDropdownVisibleChange(visible) {
-                    if (visible) {
-                        setTimeout(() => searchInput.select());
-                    }
-                },
-                render(text) {
-                    return (<Highlighter
-                        highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                        searchWords={[searchText]}
-                        autoEscape
-                        textToHighlight={text ? text.toString() : ""}
-                    />)
-                }
-            }
-        }
-    });
-    return filter;
-}
-
-function createColumns(data, filterPorps) {
+function createColumns(data) {
     !data instanceof Array && new Error('data must a Array');
     const columns = data.map((item, index, columnsArr) => {
         if (index === columnsArr.length - 1) {
             return {
-                ...getColumnSearchProps(item.name, filterPorps),
-                ...columnsTypeHandlers(item)
+                ...TableHeaderType(item)
             }
         } else if (item.position === "1" || item.position === "2") {
             return {
                 width: 130,
                 fixed: 'left',
-                ...getColumnSearchProps(item.name, filterPorps),
-                ...columnsTypeHandlers(item)
+                ...TableHeaderType(item)
             }
         } else {
             return {
                 width: 130,
-                ...getColumnSearchProps(item.name, filterPorps),
-                ...columnsTypeHandlers(item)
+                ...TableHeaderType(item)
             }
         }
 
@@ -111,13 +30,11 @@ function createColumns(data, filterPorps) {
 
 function formatData(data, props) {
     let columns = data.head.filter(item => item.position !== "0").map(item => ({ ...item, routerName: data.name })),
-        dataSource = data.data.list,
-        { total, pageSize, current } = data.data,
-        filterPorps = data.table ? data.table.tableData : [];
-    const pagination = { showSizeChanger: true, onShowSizeChange, defaultCurrent: current, total, pageSize, current, size: "" };
-    dataSource = dataSource ? dataSource.map(item => { return { key: item.id, ...item } }) : [];
-    columns = createColumns(columns, filterPorps);
-
+        dataSource = data.data.list ? data.data.list.slice(0, data.data.pageSize) : data.data.list,
+        { total, pageSize, current } = data.data;
+    const pagination = { showSizeChanger: true, onShowSizeChange: props.onShowSizeChange, defaultCurrent: current, total, pageSize, size: "" };
+    dataSource = dataSource ? dataSource.map(item => { return { key: item.id || item.model, ...item } }) : [];
+    columns = createColumns(columns);
     columns.length > 0 && columns.push({
         title: "操作",
         dataIndex: "pageButton",
@@ -126,7 +43,7 @@ function formatData(data, props) {
         fixed: 'right',
         render(tag) {
             return (<span>{
-                tag && tag.map(item => (<SelefButton {...item} key={item.linkUrl} show={props.show} {...props} >{item.name}</SelefButton>))
+                tag && tag.map(item => (<SelefButton {...item} key={item.linkUrl} {...props} >{item.name}</SelefButton>))
             }</span>)
         }
     });
@@ -136,6 +53,18 @@ function formatData(data, props) {
 function TableView(props) {
     const tableInfo = formatData(props.data.toJS(), props);
     const pageButton = props.data.get('bottomPageButton');
+    const { pageSize, list } = props.data.get('data');
+    const footData = list ? (pageSize ? list.slice(pageSize) : []) : [];
+    const footer = () => (<Row>
+        {footData.map((item, index) => {
+            const { pageButton, chanceSerial, contractType } = item;
+            return (<Row key={index}>
+                <Col span={8}>{pageButton && pageButton[0].name}</Col>
+                <Col span={8}>{chanceSerial && chanceSerial}</Col>
+                <Col span={8}>{contractType && contractType}</Col>
+            </Row>)
+        })}
+    </Row>)
     const rowSelection = {
         onChange: (selectedRowKeys, selectedRows) => {
             props.getCheckBox(selectedRowKeys)
@@ -146,12 +75,13 @@ function TableView(props) {
         }),
     };
     pageButton && pageButton.length > 0 && (tableInfo.rowSelection = rowSelection);
-    return (<Table className="tableView" size="middle" rowkey={props.data.get('name')}  {...tableInfo} {...props} scroll={{ x: 170 * (tableInfo.columns.length - 1) }} />)
+    return (<Table className="tableView" footer={footer} size="middle" rowkey={props.data.get('name') + props.data.getIn(['data', 'current'])}  {...tableInfo} {...props} scroll={{ x: 170 * (tableInfo.columns.length - 1), y: 600 }} />)
 }
 
 TableView.propTypes = {
     data: PropTypes.object.isRequired,
-    selectChange: PropTypes.func
+    selectChange: PropTypes.func,
+    onShowSizeChange: PropTypes.func,
 }
 
 export default TableView;

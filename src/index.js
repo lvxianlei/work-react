@@ -11,7 +11,7 @@ import { createLogger } from 'redux-logger';
 import reducers from './component/reducers';
 import rootSaga from './component/rootSaga';
 import * as serviceWorker from './serviceWorker';
-import { LocaleProvider } from 'antd';
+import { ConfigProvider } from 'antd';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
@@ -32,6 +32,6 @@ store.runSaga(rootSaga);
 
 export default store;
 
-ReactDOM.render(<LocaleProvider locale={zh_CN}><Root store={store} history={browserHistory} /></LocaleProvider>, document.getElementById('root'));
+ReactDOM.render(<ConfigProvider locale={zh_CN}><Root store={store} history={browserHistory} /></ConfigProvider >, document.getElementById('root'));
 
 serviceWorker.unregister();

@@ -1,8 +1,8 @@
 const proxy = require("http-proxy-middleware");
 module.exports = function (app) {
   app.use(
-    proxy('/oauth/token', {
-      target: "http://t.50-jia.com:8099/",
+    proxy('/api-user/', {
+      target: "http://t.50-jia.com",
       changeOrigin: true
     })
   );

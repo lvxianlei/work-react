@@ -1,13 +1,18 @@
-import { call, put, takeLatest } from 'redux-saga/effects';
+import { call, put, takeLatest, takeEvery } from 'redux-saga/effects';
 import {
     fetchDetailSpeSuccess,
     fetchDetailSpeError,
     fetchgetFlowInstanceLogsActionSuccess,
-    fetchgetFlowInstanceLogsActionError
+    fetchgetFlowInstanceLogsActionError,
+
+    submitChangeFlowStatusSuccess,
+    submitChangeFlowStatusError
 } from './action';
 import {
     FETCH_DETAILSPE_START,
     FETCH_DETAILSPE_SUCCESS,
+    SUBMIT_CHANGEFLOWSTATUS_START,
+    // SUBMIT_CHANGEFLOWSTATUS_SUCCESS
 } from '../../common/API';
 import { request } from '../../common/util/request';
 function fetchDetailSpe(data) {
@@ -39,7 +44,21 @@ function* getFlowInstanceLogsAction(action) {
     }
 }
 
+function submitChangeFlowStatus(data) {
+    return request(data);
+}
+
+function* submitChangeFlowStatusAction(action) {
+    try {
+        const changeFlowStatus = yield call(submitChangeFlowStatus, action.paload);
+        yield put(submitChangeFlowStatusSuccess(changeFlowStatus));
+    } catch (err) {
+        yield put(submitChangeFlowStatusError(err));
+    }
+}
+
 export default function* DetailSpeSaga() {
     yield takeLatest(FETCH_DETAILSPE_START, getDetailSpeAction);
     yield takeLatest(FETCH_DETAILSPE_SUCCESS, getFlowInstanceLogsAction);
+    yield takeEvery(SUBMIT_CHANGEFLOWSTATUS_START, submitChangeFlowStatusAction);
 }

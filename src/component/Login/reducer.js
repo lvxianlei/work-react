@@ -9,15 +9,15 @@ const initState = Map({
     token_type: "",
     username: "",
     error: false,
-    isLogin:false
+    isLogin: false
 });
 
 export default (state = initState, action) => {
     switch (action.type) {
         case LOGIN_START:
-            return state;
+            return state.set('error', false).set('isLogin', false);
         case LOGIN_SUCCESS:
-            return state.mergeDeep(action.paload).set('isLogin',true);
+            return state.mergeDeep(action.paload).set('isLogin', true);
         case LOGIN_ERROR:
             return state.set('error', true).set('errorInfo', action.paload);
         default:

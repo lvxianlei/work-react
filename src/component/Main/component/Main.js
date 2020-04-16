@@ -15,7 +15,7 @@ import { fetchMainStart } from '../action';
 import PropTypes from 'prop-types';
 import IScroll from '../../../../node_modules/iscroll/build/iscroll';
 import NoMatch from '../../NoMatch';
-import { iconType } from '../../../../src/common/util/iconType';
+import { IconType } from '../../../../src/common/Type';
 const SubMenu = Menu.SubMenu;
 const { Header, Sider, Content } = Layout;
 const rootSubmenuKeys = [];
@@ -34,9 +34,10 @@ export default class Main extends Component {
     this.onOpenChange = this.onOpenChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.toggle = this.toggle.bind(this);
+    this.logout = this.logout.bind(this)
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     let openKeys = getItem("openKeys");
     if (openKeys !== null && openKeys !== "") {
       openKeys = openKeys.split(',');
@@ -57,6 +58,7 @@ export default class Main extends Component {
         openKeys: latestOpenKey ? [latestOpenKey] : [],
       });
     }
+    // this.scroll.refresh();
   }
 
   toggle() {
@@ -94,7 +96,7 @@ export default class Main extends Component {
     return state
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { openKeys, defaultSelectedKey } = this.state;
     if (nextProps.Main.toJS().length > 0) {
       this.addSubmenuKeys(nextProps.Main.toJS());
@@ -127,6 +129,7 @@ export default class Main extends Component {
   }
 
   handleClick(e) {
+    this.scroll.refresh();
     const props = e.item.props;
     setItem({ openKeys: e.keyPath, list: props.path.url });
     const routes = this.breadcrumb(e.keyPath, this.state.mainData);
@@ -143,15 +146,33 @@ export default class Main extends Component {
     }));
   }
 
+  logout() {
+    window.localStorage.removeItem("expires_in")
+    window.localStorage.removeItem("refresh_token")
+    window.localStorage.removeItem("account")
+    window.localStorage.removeItem("token_type")
+    window.localStorage.removeItem("rolename")
+    window.localStorage.removeItem("list")
+    window.localStorage.removeItem("scope")
+    window.localStorage.removeItem("username")
+    window.localStorage.removeItem("userid")
+    window.localStorage.removeItem("access_token")
+    window.localStorage.removeItem("detail")
+    window.localStorage.removeItem("openKeys")
+    this.props.dispatch(push('/'))
+  }
+
   render() {
     const { mainData, openKeys, defaultSelectedKey, routes, title } = this.state;
     const userCenter = mainData.slice(mainData.length - 1)[0];
-    const userCenterDropdown = (<Menu>
+
+    const userCenterDropdown = (<Menu forceSubMenuRender>
       {userCenter && userCenter.childJmenu[0].childJmenu.map(item => <Menu.Item key={item.name}><Link to={
-        item.pageName === "pwd" ? { pathname: `/home/special/pwd`, state: { url: item.url } } : { pathname: `/home/${item.pageName}/detail`, state: { url: item.url } }
-      }>{iconType[item.id]}{item.name}</Link></Menu.Item>)}
-      <Menu.Item><div><Icon type="logout" />退出登录</div></Menu.Item>
+        item.pageName === "pwd" ? { pathname: `/home/special/pwd`, state: { url: item.url } } : { pathname: `/home/special/myUserInfo`, state: { url: item.url } }
+      }>{IconType[item.id]}{item.name}</Link></Menu.Item>)}
+      <Menu.Item><div onClick={this.logout}><Icon type="logout" />退出登录</div></Menu.Item>
     </Menu>);
+
     return (
       <Layout className="main">
         <Sider trigger={null} collapsible collapsed={this.state.collapsed}
@@ -166,12 +187,16 @@ export default class Main extends Component {
             <Menu
               mode="inline"
               openKeys={openKeys}
+              forceSubMenuRender
               onOpenChange={this.onOpenChange}
               defaultSelectedKeys={defaultSelectedKey}
               defaultOpenKeys={openKeys}
               onClick={this.handleClick}
+              style={{
+                height: '100%'
+              }}
             >
-              {mainData.map(item => (<SubMenu key={item.id} title={<span>{iconType[item.id]}<span>{item.name}</span></span>}>
+              {mainData.map(item => (<SubMenu key={item.id} title={<span>{IconType[item.id]}<span>{item.name}</span></span>}>
                 {item.childJmenu && item.childJmenu.map(item => (<SubMenu key={item.id} title={<span>{item.name}</span>}>
                   {item.childJmenu && item.childJmenu.map(item => (<Menu.Item path={{ url: item.url, pageName: item.pageName }} key={item.id}>{item.name}</Menu.Item>))}
                 </SubMenu>))}
@@ -213,8 +238,8 @@ export default class Main extends Component {
             </nav>
             <Switch>
               <Route exact path="/home/:name" component={List} />
-              <Route exact path="/home/special/channelDeptReportPage" component={ContractReportPage} />
               <Route exact path="/home/special/myUserInfo" component={Detail} />
+              <Route exact path="/home/special/myUserInfo/edit" component={Edit} />
               <Route exact path="/home/special/pageSetting" component={List} />
               <Route exact path="/home/special/pwd" component={Edit} />
               <Route exact path="/home/:name/detail" component={Detail} />
@@ -225,6 +250,8 @@ export default class Main extends Component {
               <Route exact path="/home/:name/:page/goto_plist/page_form_setting" component={PageFormSetting} />
               <Route exact path="/home/:name/:page/goto_plist/page_plist_setting" component={PageFormSetting} />
               <Route exact path="/home/:name/:page/goto_plist/page_view_setting" component={PageFormSetting} />
+              <Route exact path="/home/:name/:page/goto_plist/page_button_setting" component={List} />
+              <Route exact path="/home/:name/:page/goto_plist/page_button_setting/edit" component={Edit} />
               <Route exact path="/home/:name/:page/goto_plist/edit" component={Edit} />
               <Route exact path="/home/:name/detail/offerdetail" component={OfferDetail} />
               <Route exact path="/home/:name/detail/detail" component={ContractReportPage} />
