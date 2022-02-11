@@ -1,5 +1,5 @@
 FROM node:10.13-alpine as base
-RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
+RUN npm install -g cnpm --registry=https://registry.npmmirror.com
 WORKDIR /usr/src/work
 COPY ./ /usr/src/work
 RUN cd /usr/src/work \
